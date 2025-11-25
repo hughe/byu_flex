@@ -1,5 +1,15 @@
 # Tampermonkey Scripts for Making the BYU OHS Canvas Easier to Use for Flex Students
 
+## Introduction
+
+I have two kids who are attending Brigham Young University Online High School (BYU OHS). For reasons that I don't understand, their version of Canvas does not correctly show grades for Flex students. So I created this:
+
+![Screenshot of Flex Grade Calculator in action](screenshot.png)
+
+When intalled, the "Grade Summary" window will pop up over the "Grades" page for a course on Canvas.
+
+The window shows the students' current marks for all of the assignments and tests that they have completed. It also shows their progress in the course judged by how much they have handed in excluding the final exam. Finally, on the grades page, we highlight the marks that have been used to calculate their current mark, along with indications of where the sheen could do better.
+
 ## Flex Grade Calculator
 
 A Tampermonkey userscript that enhances the BYU OHS Canvas grade page with automatic grade calculation and visual performance indicators.
@@ -18,7 +28,7 @@ A Tampermonkey userscript that enhances the BYU OHS Canvas grade page with autom
 ### Installation
 
 1. **Install Tampermonkey** (if you haven't already):
-   - [Chrome](https://chrome.google.com/webstore/detail/tampermonkey/dhdgffkkebhmkfjojejmpbldmpobfkfo)
+   - It also shows their progress through the course.[Chrome](https://chrome.google.com/webstore/detail/tampermonkey/dhdgffkkebhmkfjojejmpbldmpobfkfo)
    - [Firefox](https://addons.mozilla.org/en-US/firefox/addon/tampermonkey/)
    - [Safari](https://apps.apple.com/us/app/tampermonkey/id1482490089)
    - [Edge](https://microsoftedge.microsoft.com/addons/detail/tampermonkey/iikmkjmpaadaobahmlepeloendndfphd)
