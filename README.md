@@ -4,7 +4,7 @@
 
 I have two kids who are attending Brigham Young University Online High School (BYU OHS). For reasons that I don't understand, their version of Canvas does not correctly show grades for Flex students. So I created this:
 
-![Screenshot of Flex Grade Calculator in action](https://github.com/hughe/byu_flexP/blob/master/img/screenshot.png)
+![Screenshot of Flex Grade Calculator in action](https://github.com/hughe/byu_flex/blob/master/img/screenshot.png)
 
 When intalled, the "Grade Summary" window will pop up over the "Grades" page for a course on Canvas.
 
