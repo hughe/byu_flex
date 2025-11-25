@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Flex Grade Calculator
 // @namespace    http://tampermonkey.net/
-// @version      2.6
+// @version      2.7
 // @description  Calculate total grades from assignment scores
 // @author       Claude Sonnet 4.5 prompted by Hugh Emberson <hugh.emberson@gmail.com>
 // @match        https://byuohs.instructure.com/courses/*/grades*
@@ -12,7 +12,7 @@
     'use strict';
 
     // Log script version
-    console.log('Flex Grade Calculator v2.6');
+    console.log('Flex Grade Calculator v2.7');
 
     const showCountedGrades = true;
     const showUnderPerformance = true;
@@ -184,7 +184,7 @@
 
     // Create the grade summary display
     const resultDiv = document.createElement('div');
-    resultDiv.style.cssText = 'position: fixed; top: 50px; right: 10px; background: #fff; border: 2px solid #333; padding: 15px; border-radius: 5px; box-shadow: 0 2px 10px rgba(0,0,0,0.2); z-index: 10000; font-family: Arial, sans-serif; font-size: 0.6em;';
+    resultDiv.style.cssText = 'position: fixed; top: 50px; right: 10px; background: #fff; border: 2px solid #333; padding: 18px; border-radius: 5px; box-shadow: 0 2px 10px rgba(0,0,0,0.2); z-index: 10000; font-family: Arial, sans-serif; font-size: 0.72em;';
     resultDiv.innerHTML = `
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
             <h3 style="margin: 0; font-size: 1.5em;">Grade Summary</h3>
