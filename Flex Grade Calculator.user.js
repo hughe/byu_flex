@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Flex Grade Calculator
 // @namespace    http://tampermonkey.net/
-// @version      2.7
+// @version      2.8
 // @description  Calculate total grades from assignment scores
 // @author       Claude Sonnet 4.5 prompted by Hugh Emberson <hugh.emberson@gmail.com>
 // @match        https://byuohs.instructure.com/courses/*/grades*
@@ -12,7 +12,7 @@
     'use strict';
 
     // Log script version
-    console.log('Flex Grade Calculator v2.7');
+    console.log('Flex Grade Calculator v2.8');
 
     const showCountedGrades = true;
     const showUnderPerformance = true;
@@ -195,7 +195,27 @@
         <p style="margin: 5px 0;"><strong>Percentage:</strong> ${totalCompleted > 0 ? ((totalGrade / totalCompleted) * 100).toFixed(2) + '%' : 'N/A'}</p>
         <h3 style="margin: 10px 0 10px 0; font-size: 1.5em;">Progress</h3>
         <p style="margin: 5px 0;"><strong>Total Grades (Excluding Final):</strong> ${totalExcludingFinal.toFixed(2)}</p>
-        <p style="margin: 5px 0;"><strong>Percentage:</strong> ${totalExcludingFinal > 0 ? ((totalCompleted / totalExcludingFinal) * 100).toFixed(2) + '%' : 'N/A'}</p>
+        <p style="margin: 5px 0;"><strong>Work Handed-in &amp; Marked:</strong> ${totalExcludingFinal > 0 ? ((totalCompleted / totalExcludingFinal) * 100).toFixed(2) + '%' : 'N/A'}</p>
+        <h3 style="margin: 10px 0 10px 0; font-size: 1.5em;">Color Key</h3>
+
+        <div style="margin: 5px 0;">
+            <div style="display: flex; align-items: center; margin: 3px 0;">
+                <span style="display: inline-block; width: 15px; height: 15px; background-color: #d4edda; border: 1px solid #ccc; border-radius: 3px; margin-right: 8px;"></span>
+                <span>100%</span>
+            </div>
+            <div style="display: flex; align-items: center; margin: 3px 0;">
+                <span style="display: inline-block; width: 15px; height: 15px; background-color: #ffffe0; border: 1px solid #ccc; border-radius: 3px; margin-right: 8px;"></span>
+                <span>90-99% (room for improvement)</span>
+            </div>
+            <div style="display: flex; align-items: center; margin: 3px 0;">
+                <span style="display: inline-block; width: 15px; height: 15px; background-color: #ffcccb; border: 1px solid #ccc; border-radius: 3px; margin-right: 8px;"></span>
+                <span>&lt;90% (needs attention)</span>
+            </div>
+            <div style="display: flex; align-items: center; margin: 3px 0;">
+                <span style="display: inline-block; width: 15px; height: 15px; background-color: #ffffff; border: 1px solid #ccc; border-radius: 3px; margin-right: 8px;"></span>
+                <span>Not attempted</span>
+            </div>
+        </div>
     `;
     document.body.appendChild(resultDiv);
 
