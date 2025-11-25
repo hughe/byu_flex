@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Flex Grade Calculator
 // @namespace    http://tampermonkey.net/
-// @version      2.3
+// @version      2.6
 // @description  Calculate total grades from assignment scores
 // @author       Claude Sonnet 4.5 prompted by Hugh Emberson <hugh.emberson@gmail.com>
 // @match        https://byuohs.instructure.com/courses/*/grades*
@@ -10,6 +10,14 @@
 
 (function() {
     'use strict';
+
+    // Log script version
+    console.log('Flex Grade Calculator v2.6');
+
+    const showCountedGrades = true;
+    const showUnderPerformance = true;
+
+    const DELTA = 0.000001;
 
     // Find all tr elements with both classes "student_assignment" and "assignment_graded"
     const rows = document.querySelectorAll('tr.student_assignment.assignment_graded');
@@ -27,11 +35,20 @@
 
         // Skip rows that contain a div.context with "Ungraded" text in the title cell
         const titleCell = row.querySelector('th.title');
+
+	const titleCellLink = titleCell ? titleCell.querySelector('a') : null;
+	if(titleCellLink && titleCellLink.textContent.trim() === "Final Exam Shell") {
+            console.log('Skipping Final Exam Shell');
+            return;
+        }
+	
         const contextDiv = titleCell ? titleCell.querySelector('div.context') : null;
         if (contextDiv && contextDiv.textContent.trim() === 'Ungraded') {
             console.log('Skipping ungraded assignment');
             return;
         }
+
+	
 
         // Check if the next sibling row contains "does not count toward the final grade"
         const nextRow = row.nextElementSibling;
@@ -63,6 +80,32 @@
                     if (!isNaN(totalNumber)) {
                         totalGrade += gradeNumber;
                         totalCompleted += totalNumber;
+			const percentage = gradeNumber / totalNumber;
+
+                        // Highlight counted grades with light green background
+			if(showCountedGrades) {
+                            scoreCell.style.backgroundColor = '#d4edda';
+                            scoreCell.style.padding = '2px 4px';
+                            scoreCell.style.borderRadius = '3px';
+			}
+
+			if(showUnderPerformance) {
+			    if(Math.abs(percentage - 1.0) < DELTA) {
+				// pass.
+			    } else if(percentage > 0.9) {
+				// Highlight under-performing
+				// assignments with light yellow
+				// background
+				scoreCell.style.backgroundColor = '#ffffe0';
+				scoreCell.style.padding = '2px 4px';
+				scoreCell.style.borderRadius = '3px';
+			    } else if(totalNumber > 0) {
+				// Highlight poorly performing assignments with light red background
+				scoreCell.style.backgroundColor = '#ffcccb';
+				scoreCell.style.padding = '2px 4px';
+				scoreCell.style.borderRadius = '3px';
+			    }
+			}
 
                         console.log(`Found: ${gradeNumber} / ${totalNumber}`);
                     }
