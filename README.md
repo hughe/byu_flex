@@ -8,7 +8,7 @@ I have two kids who are attending Brigham Young University Online High School (B
 
 When intalled, the "Grade Summary" window will pop up over the "Grades" page for a course on Canvas.
 
-The window shows the students' current marks for all of the assignments and tests that they have completed. It also shows their progress in the course judged by how much they have handed in excluding the final exam. Finally, on the grades page, we highlight the marks that have been used to calculate their current mark, along with indications of where the sheen could do better.
+The window shows the students' current marks for all of the assignments and tests that they have completed. It also shows their progress in the course judged by how much they have handed in, excluding the final exam. Finally, on the grades page, we highlight the marks that have been used to calculate their current mark, along with indications of where they could do better.
 
 ## Flex Grade Calculator
 
