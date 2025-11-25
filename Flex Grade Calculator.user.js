@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Flex Grade Calculator
 // @namespace    http://tampermonkey.net/
-// @version      2.8
+// @version      2.9
 // @description  Calculate total grades from assignment scores
 // @author       Claude Sonnet 4.5 prompted by Hugh Emberson <hugh.emberson@gmail.com>
 // @match        https://byuohs.instructure.com/courses/*/grades*
@@ -12,7 +12,7 @@
     'use strict';
 
     // Log script version
-    console.log('Flex Grade Calculator v2.8');
+    console.log('Flex Grade Calculator v2.9');
 
     const showCountedGrades = true;
     const showUnderPerformance = true;
@@ -190,11 +190,11 @@
             <h3 style="margin: 0; font-size: 1.5em;">Grade Summary</h3>
             <button id="closeGradeSummary" style="background: none; border: none; font-size: 2em; cursor: pointer; padding: 0; margin-left: 15px; color: #666; line-height: 1;">&times;</button>
         </div>
-        <p style="margin: 5px 0;"><strong>Total Grade:</strong> ${totalGrade.toFixed(2)}</p>
-        <p style="margin: 5px 0;"><strong>Total Possible:</strong> ${totalCompleted.toFixed(2)}</p>
-        <p style="margin: 5px 0;"><strong>Percentage:</strong> ${totalCompleted > 0 ? ((totalGrade / totalCompleted) * 100).toFixed(2) + '%' : 'N/A'}</p>
+        <p style="margin: 5px 0;"><strong>Current Marks:</strong> ${totalGrade.toFixed(2)}</p>
+        <p style="margin: 5px 0;"><strong>Current Attempted:</strong> ${totalCompleted.toFixed(2)}</p>
+        <p style="margin: 5px 0;"><strong>Current Grade:</strong> ${totalCompleted > 0 ? ((totalGrade / totalCompleted) * 100).toFixed(2) + '%' : 'N/A'}</p>
         <h3 style="margin: 10px 0 10px 0; font-size: 1.5em;">Progress</h3>
-        <p style="margin: 5px 0;"><strong>Total Grades (Excluding Final):</strong> ${totalExcludingFinal.toFixed(2)}</p>
+        <p style="margin: 5px 0;"><strong>Total Grades In Course (Ex Final):</strong> ${totalExcludingFinal.toFixed(2)}</p>
         <p style="margin: 5px 0;"><strong>Work Handed-in &amp; Marked:</strong> ${totalExcludingFinal > 0 ? ((totalCompleted / totalExcludingFinal) * 100).toFixed(2) + '%' : 'N/A'}</p>
         <h3 style="margin: 10px 0 10px 0; font-size: 1.5em;">Color Key</h3>
 
@@ -213,7 +213,7 @@
             </div>
             <div style="display: flex; align-items: center; margin: 3px 0;">
                 <span style="display: inline-block; width: 15px; height: 15px; background-color: #ffffff; border: 1px solid #ccc; border-radius: 3px; margin-right: 8px;"></span>
-                <span>Not attempted</span>
+                <span>Not attempted or ungraded</span>
             </div>
         </div>
     `;
