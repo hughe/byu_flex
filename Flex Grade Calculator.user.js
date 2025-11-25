@@ -36,6 +36,10 @@
         // Skip rows that contain a div.context with "Ungraded" text in the title cell
         const titleCell = row.querySelector('th.title');
 
+	// For some reason the row showed up recently in Will's
+	// Geometry I part 2 course and it shows as been marked, which
+	// it isn't and the score was 0/50. So it threw things off by
+	// a lot.
 	const titleCellLink = titleCell ? titleCell.querySelector('a') : null;
 	if(titleCellLink && titleCellLink.textContent.trim() === "Final Exam Shell") {
             console.log('Skipping Final Exam Shell');
