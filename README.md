@@ -1,4 +1,4 @@
-# Tampermonkey Scripts for Making BYU OHS Flex Canvas More Useful
+# Tampermonkey Scripts for Making the BYU OHS Canvas Easier to Use for Flex Students
 
 ## Flex Grade Calculator
 
