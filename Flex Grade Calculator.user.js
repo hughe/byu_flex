@@ -45,14 +45,14 @@
             console.log('Skipping Final Exam Shell');
             return;
         }
-	
+
         const contextDiv = titleCell ? titleCell.querySelector('div.context') : null;
         if (contextDiv && contextDiv.textContent.trim() === 'Ungraded') {
             console.log('Skipping ungraded assignment');
             return;
         }
 
-	
+
 
         // Check if the next sibling row contains "does not count toward the final grade"
         const nextRow = row.nextElementSibling;
@@ -69,9 +69,24 @@
             const gradeSpan = scoreCell.querySelector('span.grade');
 
             if (gradeSpan) {
-                // Get the text content of the grade span (the number inside)
-                const gradeText = gradeSpan.textContent.trim();
-                const gradeNumber = parseFloat(gradeText);
+                // FIXED: Get the grade number from the last text node child
+                // The structure has changed - the number is now at the end of the span
+                let gradeNumber = null;
+
+                // Try to get from the last child text node
+                const lastChild = gradeSpan.childNodes[gradeSpan.childNodes.length - 1];
+                if (lastChild && lastChild.nodeType === Node.TEXT_NODE) {
+                    const gradeText = lastChild.textContent.trim();
+                    gradeNumber = parseFloat(gradeText);
+                }
+
+                // Fallback: try to get from hidden original_points span
+                if (isNaN(gradeNumber) || gradeNumber === null) {
+                    const originalPoints = scoreCell.querySelector('span.original_points');
+                    if (originalPoints) {
+                        gradeNumber = parseFloat(originalPoints.textContent.trim());
+                    }
+                }
 
                 // Find the next span sibling (which contains "/ XX")
                 const nextSpan = gradeSpan.nextElementSibling;
@@ -170,10 +185,10 @@
         }
     });
 
-    //console.log('Total Grade:', totalGrade);
-    //console.log('Total Possible:', totalCompleted);
-    //console.log('Total Possible (Excluding Final):', totalExcludingFinal);
-    //console.log('Percentage:', totalCompleted > 0 ? ((totalGrade / totalCompleted) * 100).toFixed(2) + '%' : 'N/A');
+    console.log('Total Grade:', totalGrade);
+    console.log('Total Possible:', totalCompleted);
+    console.log('Total Possible (Excluding Final):', totalExcludingFinal);
+    console.log('Percentage:', totalCompleted > 0 ? ((totalGrade / totalCompleted) * 100).toFixed(2) + '%' : 'N/A');
 
     // Create the toggle button (initially hidden)
     const toggleButton = document.createElement('button');
