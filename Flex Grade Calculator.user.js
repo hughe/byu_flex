@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Flex Grade Calculator
 // @namespace    http://tampermonkey.net/
-// @version      3.3
+// @version      3.4
 // @description  Calculate total grades from assignment scores (supports both points and percentage modes)
 // @author       Claude Sonnet 4.5 prompted by Hugh Emberson <hugh.emberson@gmail.com>
 // @match        https://byuohs.instructure.com/courses/*/grades*
@@ -12,7 +12,7 @@
     'use strict';
 
     // Log script version
-    console.log('Flex Grade Calculator v3.3 - Fixed totalExcludingFinal to use graded rows only');
+    console.log('Flex Grade Calculator v3.4');
 
     const showCountedGrades = true;
     const showUnderPerformance = true;
@@ -140,10 +140,10 @@
         }
     });
 
-    // FIXED: Use assignment_graded rows only, not all rows
-    // This gives us "work completed / work that has been graded so far"
-    // rather than "work completed / all future work"
-    const all_rows = document.querySelectorAll('tr.student_assignment.assignment_graded');
+    // FIXED in v3.4: Use ALL rows, but only count ones with visible point totals ("/ XX")
+    // This captures both graded assignments AND available-but-not-yet-graded assignments
+    // while excluding future assignments that don't have point totals visible yet
+    const all_rows = document.querySelectorAll('tr.student_assignment');
 
     all_rows.forEach(row => {
         const titleCell = row.querySelector('th.title');
@@ -173,20 +173,25 @@
 
             if (gradeSpan) {
                 const nextSpan = gradeSpan.nextElementSibling;
-                let totalNumber = null;
-
+                
+                // CRITICAL: Only count assignments that have a visible point total
+                // This includes both completed and available-but-incomplete assignments
+                // but excludes future assignments that don't show "/ XX" yet
                 if (nextSpan && nextSpan.textContent.includes('/')) {
-                    // Points mode
+                    // Points mode - extract the actual total
                     const totalText = nextSpan.textContent.trim();
-                    totalNumber = parseFloat(totalText.replace('/', '').trim());
+                    const totalNumber = parseFloat(totalText.replace('/', '').trim());
+                    
+                    if (!isNaN(totalNumber)) {
+                        console.log("Found: ", title, " value: ", totalNumber);
+                        totalExcludingFinal += totalNumber;
+                    }
                 } else {
-                    // Percentage mode - count as 100 points each
-                    totalNumber = 100;
-                }
-
-                if (!isNaN(totalNumber)) {
-                    console.log("Found: ", title, " value: ", totalNumber);
-                    totalExcludingFinal += totalNumber;
+                    // Percentage mode - only count if it's been graded
+                    // (In percentage mode, we can't tell what's "available" vs "future")
+                    if (row.classList.contains('assignment_graded')) {
+                        totalExcludingFinal += 100;
+                    }
                 }
             }
         }
