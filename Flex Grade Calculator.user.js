@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         Flex Grade Calculator
 // @namespace    http://tampermonkey.net/
-// @version      2.9
-// @description  Calculate total grades from assignment scores
+// @version      3.3
+// @description  Calculate total grades from assignment scores (supports both points and percentage modes)
 // @author       Claude Sonnet 4.5 prompted by Hugh Emberson <hugh.emberson@gmail.com>
 // @match        https://byuohs.instructure.com/courses/*/grades*
 // @grant        none
@@ -12,7 +12,7 @@
     'use strict';
 
     // Log script version
-    console.log('Flex Grade Calculator v2.9');
+    console.log('Flex Grade Calculator v3.3 - Fixed totalExcludingFinal to use graded rows only');
 
     const showCountedGrades = true;
     const showUnderPerformance = true;
@@ -36,10 +36,6 @@
         // Skip rows that contain a div.context with "Ungraded" text in the title cell
         const titleCell = row.querySelector('th.title');
 
-	// For some reason the row showed up recently in Will's
-	// Geometry I part 2 course and it shows as been marked, which
-	// it isn't and the score was 0/50. So it threw things off by
-	// a lot.
 	const titleCellLink = titleCell ? titleCell.querySelector('a') : null;
 	if(titleCellLink && titleCellLink.textContent.trim() === "Final Exam Shell") {
             console.log('Skipping Final Exam Shell');
@@ -51,8 +47,6 @@
             console.log('Skipping ungraded assignment');
             return;
         }
-
-
 
         // Check if the next sibling row contains "does not count toward the final grade"
         const nextRow = row.nextElementSibling;
@@ -69,88 +63,98 @@
             const gradeSpan = scoreCell.querySelector('span.grade');
 
             if (gradeSpan) {
-                // FIXED: Get the grade number from the last text node child
-                // The structure has changed - the number is now at the end of the span
                 let gradeNumber = null;
-
-                // Try to get from the last child text node
-                const lastChild = gradeSpan.childNodes[gradeSpan.childNodes.length - 1];
-                if (lastChild && lastChild.nodeType === Node.TEXT_NODE) {
-                    const gradeText = lastChild.textContent.trim();
-                    gradeNumber = parseFloat(gradeText);
-                }
-
-                // Fallback: try to get from hidden original_points span
-                if (isNaN(gradeNumber) || gradeNumber === null) {
-                    const originalPoints = scoreCell.querySelector('span.original_points');
-                    if (originalPoints) {
-                        gradeNumber = parseFloat(originalPoints.textContent.trim());
+                let totalNumber = null;
+                
+                // Find the next span sibling (which contains "/ XX" in points mode)
+                const nextSpan = gradeSpan.nextElementSibling;
+                
+                // Check if this is points mode (has "/ XX" sibling) or percentage mode
+                const isPointsMode = nextSpan && nextSpan.textContent.includes('/');
+                
+                if (isPointsMode) {
+                    // POINTS MODE: Get grade from last child text node or original_points
+                    const lastChild = gradeSpan.childNodes[gradeSpan.childNodes.length - 1];
+                    if (lastChild && lastChild.nodeType === Node.TEXT_NODE) {
+                        const gradeText = lastChild.textContent.trim();
+                        gradeNumber = parseFloat(gradeText);
+                    }
+                    
+                    // Fallback to original_points
+                    if (isNaN(gradeNumber) || gradeNumber === null) {
+                        const originalPoints = scoreCell.querySelector('span.original_points');
+                        if (originalPoints) {
+                            gradeNumber = parseFloat(originalPoints.textContent.trim());
+                        }
+                    }
+                    
+                    // Extract total points from "/ XX" format
+                    const totalText = nextSpan.textContent.trim();
+                    totalNumber = parseFloat(totalText.replace('/', '').trim());
+                    
+                } else {
+                    // PERCENTAGE MODE: Extract percentage from displayed text
+                    // In percentage mode, we average percentages, not points
+                    // So treat each assignment as 100 points possible
+                    const lastChild = gradeSpan.childNodes[gradeSpan.childNodes.length - 1];
+                    if (lastChild && lastChild.nodeType === Node.TEXT_NODE) {
+                        const displayText = lastChild.textContent.trim();
+                        // parseFloat("60%") returns 60
+                        const percentage = parseFloat(displayText);
+                        if (!isNaN(percentage)) {
+                            gradeNumber = percentage;
+                            totalNumber = 100;
+                        }
                     }
                 }
 
-                // Find the next span sibling (which contains "/ XX")
-                const nextSpan = gradeSpan.nextElementSibling;
+                if (!isNaN(gradeNumber) && !isNaN(totalNumber) && totalNumber > 0) {
+                    totalGrade += gradeNumber;
+                    totalCompleted += totalNumber;
+                    const percentage = gradeNumber / totalNumber;
 
-                if (nextSpan && !isNaN(gradeNumber)) {
-                    // Extract the number from "/ XX" format
-                    const totalText = nextSpan.textContent.trim();
-                    const totalNumber = parseFloat(totalText.replace('/', '').trim());
+                    // Highlight counted grades with light green background
+                    if(showCountedGrades) {
+                        scoreCell.style.backgroundColor = '#d4edda';
+                        scoreCell.style.padding = '2px 4px';
+                        scoreCell.style.borderRadius = '3px';
+                    }
 
-                    if (!isNaN(totalNumber)) {
-                        totalGrade += gradeNumber;
-                        totalCompleted += totalNumber;
-			const percentage = gradeNumber / totalNumber;
-
-                        // Highlight counted grades with light green background
-			if(showCountedGrades) {
-                            scoreCell.style.backgroundColor = '#d4edda';
+                    if(showUnderPerformance) {
+                        if(Math.abs(percentage - 1.0) < DELTA) {
+                            // pass - 100%
+                        } else if(percentage > 0.9) {
+                            scoreCell.style.backgroundColor = '#ffffe0';
                             scoreCell.style.padding = '2px 4px';
                             scoreCell.style.borderRadius = '3px';
-			}
-
-			if(showUnderPerformance) {
-			    if(Math.abs(percentage - 1.0) < DELTA) {
-				// pass.
-			    } else if(percentage > 0.9) {
-				// Highlight under-performing
-				// assignments with light yellow
-				// background
-				scoreCell.style.backgroundColor = '#ffffe0';
-				scoreCell.style.padding = '2px 4px';
-				scoreCell.style.borderRadius = '3px';
-			    } else if(totalNumber > 0) {
-				// Highlight poorly performing assignments with light red background
-				scoreCell.style.backgroundColor = '#ffcccb';
-				scoreCell.style.padding = '2px 4px';
-				scoreCell.style.borderRadius = '3px';
-			    }
-			}
-
-                        console.log(`Found: ${gradeNumber} / ${totalNumber}`);
+                        } else if(totalNumber > 0) {
+                            scoreCell.style.backgroundColor = '#ffcccb';
+                            scoreCell.style.padding = '2px 4px';
+                            scoreCell.style.borderRadius = '3px';
+                        }
                     }
+
+                    console.log(`Found: ${gradeNumber} / ${totalNumber}`);
                 }
             }
         }
     });
 
-    const all_rows = document.querySelectorAll('tr.student_assignment');
+    // FIXED: Use assignment_graded rows only, not all rows
+    // This gives us "work completed / work that has been graded so far"
+    // rather than "work completed / all future work"
+    const all_rows = document.querySelectorAll('tr.student_assignment.assignment_graded');
 
-    // Calculate totalExcludingFinal by iterating through all rows again
     all_rows.forEach(row => {
-        // Check if this is the Proctored Final Exam
         const titleCell = row.querySelector('th.title');
 
-        // Skip rows that contain a div.context with "Ungraded" text in the title cell
         const contextDiv = titleCell ? titleCell.querySelector('div.context') : null;
         if (contextDiv && contextDiv.textContent.trim() === 'Ungraded') {
-            console.log('Skipping ungraded assignment (excluding final calculation)');
             return;
         }
 
-        // Check if the next sibling row contains "does not count toward the final grade"
         const nextRow = row.nextElementSibling;
         if (nextRow && nextRow.textContent.includes('This assignment does not count toward the final grade.')) {
-            console.log('Skipping assignment that does not count toward final grade (excluding final calculation)');
             return;
         }
 
@@ -158,12 +162,10 @@
         const title = titleLink ? titleLink.textContent.trim() : null;
         const isProctoredFinal = title && title.startsWith('Proctored Final Exam');
 
-        // Skip if it's the proctored final
         if (isProctoredFinal) {
             return;
         }
 
-        // Find the td with class "assignment_score"
         const scoreCell = row.querySelector('td.assignment_score');
 
         if (scoreCell) {
@@ -171,15 +173,20 @@
 
             if (gradeSpan) {
                 const nextSpan = gradeSpan.nextElementSibling;
+                let totalNumber = null;
 
-                if (nextSpan) {
+                if (nextSpan && nextSpan.textContent.includes('/')) {
+                    // Points mode
                     const totalText = nextSpan.textContent.trim();
-                    const totalNumber = parseFloat(totalText.replace('/', '').trim());
+                    totalNumber = parseFloat(totalText.replace('/', '').trim());
+                } else {
+                    // Percentage mode - count as 100 points each
+                    totalNumber = 100;
+                }
 
-                    if (!isNaN(totalNumber)) {
-                        console.log("Found: ", title, " value: ", totalNumber);
-                        totalExcludingFinal += totalNumber;
-                    }
+                if (!isNaN(totalNumber)) {
+                    console.log("Found: ", title, " value: ", totalNumber);
+                    totalExcludingFinal += totalNumber;
                 }
             }
         }
@@ -234,13 +241,11 @@
     `;
     document.body.appendChild(resultDiv);
 
-    // Add click event to close button
     document.getElementById('closeGradeSummary').addEventListener('click', function() {
         resultDiv.style.display = 'none';
         toggleButton.style.display = 'block';
     });
 
-    // Add click event to show button
     toggleButton.addEventListener('click', function() {
         resultDiv.style.display = 'block';
         toggleButton.style.display = 'none';
