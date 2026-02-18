@@ -1,10 +1,11 @@
 // ==UserScript==
 // @name         Flex Grade Calculator
 // @namespace    http://tampermonkey.net/
-// @version      3.4
+// @version      3.5
 // @description  Calculate total grades from assignment scores (supports both points and percentage modes)
 // @author       Claude Sonnet 4.5 prompted by Hugh Emberson <hugh.emberson@gmail.com>
 // @match        https://byuohs.instructure.com/courses/*/grades*
+// @match        https://classroom.ucscout.org/courses/*/grades*
 // @grant        none
 // ==/UserScript==
 
@@ -12,7 +13,7 @@
     'use strict';
 
     // Log script version
-    console.log('Flex Grade Calculator v3.4');
+    console.log('Flex Grade Calculator v3.4 - Count all assignments with point totals for totalExcludingFinal');
 
     const showCountedGrades = true;
     const showUnderPerformance = true;
@@ -65,13 +66,13 @@
             if (gradeSpan) {
                 let gradeNumber = null;
                 let totalNumber = null;
-                
+
                 // Find the next span sibling (which contains "/ XX" in points mode)
                 const nextSpan = gradeSpan.nextElementSibling;
-                
+
                 // Check if this is points mode (has "/ XX" sibling) or percentage mode
                 const isPointsMode = nextSpan && nextSpan.textContent.includes('/');
-                
+
                 if (isPointsMode) {
                     // POINTS MODE: Get grade from last child text node or original_points
                     const lastChild = gradeSpan.childNodes[gradeSpan.childNodes.length - 1];
@@ -79,7 +80,7 @@
                         const gradeText = lastChild.textContent.trim();
                         gradeNumber = parseFloat(gradeText);
                     }
-                    
+
                     // Fallback to original_points
                     if (isNaN(gradeNumber) || gradeNumber === null) {
                         const originalPoints = scoreCell.querySelector('span.original_points');
@@ -87,11 +88,11 @@
                             gradeNumber = parseFloat(originalPoints.textContent.trim());
                         }
                     }
-                    
+
                     // Extract total points from "/ XX" format
                     const totalText = nextSpan.textContent.trim();
                     totalNumber = parseFloat(totalText.replace('/', '').trim());
-                    
+
                 } else {
                     // PERCENTAGE MODE: Extract percentage from displayed text
                     // In percentage mode, we average percentages, not points
@@ -173,7 +174,7 @@
 
             if (gradeSpan) {
                 const nextSpan = gradeSpan.nextElementSibling;
-                
+
                 // CRITICAL: Only count assignments that have a visible point total
                 // This includes both completed and available-but-incomplete assignments
                 // but excludes future assignments that don't show "/ XX" yet
@@ -181,7 +182,7 @@
                     // Points mode - extract the actual total
                     const totalText = nextSpan.textContent.trim();
                     const totalNumber = parseFloat(totalText.replace('/', '').trim());
-                    
+
                     if (!isNaN(totalNumber)) {
                         console.log("Found: ", title, " value: ", totalNumber);
                         totalExcludingFinal += totalNumber;
